@@ -31,7 +31,7 @@ namespace Application.Features.Enrollments.Queries.GetEnrollmentsByStudent
             var redisKey = $"{CacheKeys.EnrollmentsByStudentPrefix(request.StudentId)}:all";
             var cached = await _cache.GetAsync<IEnumerable<EnrollmentResponse>>(redisKey, cancellationToken);
 
-            if (cached.Item2 is not null)
+            if (cached.Success && cached.Item2 is not null)
                 return Result<IEnumerable<EnrollmentResponse>>.Success(cached.Item2);
 
             var student = await _studentRepository.GetByIdAsync(request.StudentId, cancellationToken);
@@ -41,9 +41,12 @@ namespace Application.Features.Enrollments.Queries.GetEnrollmentsByStudent
             var enrollments = await _enrollmentRepository.GetByStudentIdAsync(request.StudentId, cancellationToken);
             var response = _mapper.Map<IEnumerable<EnrollmentResponse>>(enrollments);
 
-            await _cache.SetAsync(redisKey, response,
-                TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:EnrollmentsExpirationMinutes")),
-                cancellationToken);
+            if (cached.Success && cached.Item2 is null)
+            {
+                await _cache.SetAsync(redisKey, response,
+                    TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:EnrollmentsExpirationMinutes")),
+                    cancellationToken);
+            }
 
             return Result<IEnumerable<EnrollmentResponse>>.Success(response);
         }

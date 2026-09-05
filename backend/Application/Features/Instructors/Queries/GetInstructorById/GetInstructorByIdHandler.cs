@@ -30,7 +30,7 @@ namespace Application.Features.Instructors.Queries.GetInstructorById
             var redisKey = CacheKeys.Instructor(request.Id);
             var cached = await _cache.GetAsync<InstructorResponse>(redisKey, cancellationToken);
 
-            if (cached.Item2 is not null)
+            if (cached.Success && cached.Item2 is not null)
                 return Result<InstructorResponse>.Success(cached.Item2);
 
             var instructor = await _instructorRepository.GetByIdWithNavigationPropertiesAsync(request.Id, cancellationToken);
@@ -39,9 +39,12 @@ namespace Application.Features.Instructors.Queries.GetInstructorById
 
             var response = _mapper.Map<InstructorResponse>(instructor);
 
-            await _cache.SetAsync(redisKey, response,
-                TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:InstructorExpirationMinutes")),
-                cancellationToken);
+            if (cached.Success && cached.Item2 is null)
+            {
+                await _cache.SetAsync(redisKey, response,
+                    TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:InstructorExpirationMinutes")),
+                    cancellationToken);
+            }
 
             return Result<InstructorResponse>.Success(response);
         }

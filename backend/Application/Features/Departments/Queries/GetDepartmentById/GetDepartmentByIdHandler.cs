@@ -30,7 +30,7 @@ namespace Application.Features.Departments.Queries.GetDepartmentById
             var redisKey = CacheKeys.Department(request.Id);
             var cached = await _cache.GetAsync<DepartmentResponse>(redisKey, cancellationToken);
 
-            if (cached.Item2 is not null)
+            if (cached.Success && cached.Item2 is not null)
                 return Result<DepartmentResponse>.Success(cached.Item2);
 
             var department = await _departmentRepository.GetByIdWithNavigationPropertiesAsync(request.Id, cancellationToken);
@@ -39,9 +39,12 @@ namespace Application.Features.Departments.Queries.GetDepartmentById
 
             var response = _mapper.Map<DepartmentResponse>(department);
 
-            await _cache.SetAsync(redisKey, response,
-                TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:DepartmentExpirationMinutes")),
-                cancellationToken);
+            if (cached.Success && cached.Item2 is null)
+            {
+                await _cache.SetAsync(redisKey, response,
+                    TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:DepartmentExpirationMinutes")),
+                    cancellationToken);
+            }
 
             return Result<DepartmentResponse>.Success(response);
         }

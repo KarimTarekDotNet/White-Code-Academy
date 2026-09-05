@@ -1,6 +1,5 @@
 using API.Attributes;
 using API.Controllers.Common;
-using Application.Common;
 using Application.Features.Enrollments.Commands.CreateEnrollment;
 using Application.Features.Enrollments.Commands.DeleteEnrollment;
 using Application.Features.Enrollments.Queries.GetEnrollmentsByCourse;

@@ -29,15 +29,18 @@ namespace Application.Features.Instructors.Queries.GetInstructors
             var redisKey = CacheKeys.SearchInstructors(request.Parameters);
             var cached = await _cache.GetAsync<IEnumerable<InstructorResponse>>(redisKey, cancellationToken);
 
-            if (cached.Item2 is not null)
+            if (cached.Success && cached.Item2 is not null)
                 return Result<IEnumerable<InstructorResponse>>.Success(cached.Item2);
 
             var instructors = await _instructorRepository.SearchAsync(request.Parameters, cancellationToken);
             var response = _mapper.Map<IEnumerable<InstructorResponse>>(instructors);
 
-            await _cache.SetAsync(redisKey, response,
-                TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:InstructorsExpirationMinutes")),
-                cancellationToken);
+            if (cached.Success && cached.Item2 is null)
+            {
+                await _cache.SetAsync(redisKey, response,
+                    TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:InstructorsExpirationMinutes")),
+                    cancellationToken);
+            }
 
             return Result<IEnumerable<InstructorResponse>>.Success(response);
         }

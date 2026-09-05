@@ -29,7 +29,7 @@ namespace Application.Features.Courses.Queries.GetCourseById
             var redisKey = CacheKeys.Course(request.Id);
             var cached = await _cache.GetAsync<CourseResponse>(redisKey, cancellationToken);
 
-            if (cached.Item2 is not null)
+            if (cached.Success && cached.Item2 is not null)
                 return Result<CourseResponse>.Success(cached.Item2);
 
             var course = await _courseRepository.GetByIdWithNavigationPropertiesAsync(request.Id, cancellationToken);
@@ -38,9 +38,12 @@ namespace Application.Features.Courses.Queries.GetCourseById
 
             var response = _mapper.Map<CourseResponse>(course);
 
-            await _cache.SetAsync(redisKey, response,
-                TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:CourseExpirationMinutes")),
-                cancellationToken);
+            if (cached.Success && cached.Item2 is null)
+            {
+                await _cache.SetAsync(redisKey, response,
+                    TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:CourseExpirationMinutes")),
+                    cancellationToken);
+            }
 
             return Result<CourseResponse>.Success(response);
         }

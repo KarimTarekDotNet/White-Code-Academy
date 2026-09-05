@@ -28,15 +28,18 @@ namespace Application.Features.Courses.Queries.GetCourses
             var redisKey = CacheKeys.SearchCourses(request.Parameters);
             var cached = await _cache.GetAsync<IEnumerable<CourseResponse>>(redisKey, cancellationToken);
 
-            if (cached.Item2 is not null)
+            if (cached.Success && cached.Item2 is not null)
                 return Result<IEnumerable<CourseResponse>>.Success(cached.Item2);
 
             var courses = await _courseRepository.SearchAsync(request.Parameters, cancellationToken);
             var response = _mapper.Map<IEnumerable<CourseResponse>>(courses);
 
-            await _cache.SetAsync(redisKey, response,
-                TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:CoursesExpirationMinutes")),
-                cancellationToken);
+            if (cached.Success && cached.Item2 is null)
+            {
+                await _cache.SetAsync(redisKey, response,
+                    TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:CoursesExpirationMinutes")),
+                    cancellationToken);
+            }
 
             return Result<IEnumerable<CourseResponse>>.Success(response);
         }
