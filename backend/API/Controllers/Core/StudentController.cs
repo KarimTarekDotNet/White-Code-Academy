@@ -1,7 +1,10 @@
 using API.Attributes;
 using API.Controllers.Common;
+using Application.Common;
 using Application.Features.Students.Commands.AssignStudent;
 using Application.Features.Students.Commands.DeleteStudent;
+using Application.Features.Students.Queries.GetStudentByUserId;
+using Application.Features.Students.Queries.GetStudents;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +20,29 @@ namespace API.Controllers.Core
         public StudentController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [HttpGet("me")]
+        [Authorize(Roles ="User")]
+        [EnableRateLimiting("ReadPolicy")]
+        public async Task<IActionResult> GetStudent()
+        {
+            var userId = GetCurrentUserId();
+            var result = await _mediator.Send(new GetStudentByUserIdQuery(userId));
+            if(result!.IsSuccess)
+                return Ok(result);
+            return NotFound(result);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Instructor")]
+        [EnableRateLimiting("ReadPolicy")]
+        public async Task<IActionResult> GetStudents([FromQuery] QueryParameters parameters)
+        {
+            var result = await _mediator.Send(new GetStudentsQuery(parameters));
+            if(result!.IsSuccess)
+                return Ok(result);
+            return NotFound(result);
         }
 
         // POST /api/student

@@ -60,7 +60,8 @@ namespace Infrastructure.Repositories
 
         private async Task<IEnumerable<Department>> ApplyQueryParameters(IQueryable<Department> query, QueryParameters queryParameters, CancellationToken cancellationToken = default)
         {
-            if (!string.IsNullOrEmpty(queryParameters.WordForSearch) || !queryParameters.WordForSearch!.Equals("all"))
+            if (!string.IsNullOrEmpty(queryParameters.WordForSearch) ||
+            !queryParameters.WordForSearch!.Equals("%all%", StringComparison.OrdinalIgnoreCase))
             {
                 var searchTerm = $"%{queryParameters.WordForSearch.Trim().ToLower()}%";
                 query = query.Where(d =>

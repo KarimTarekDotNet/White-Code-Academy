@@ -1,12 +1,15 @@
 using API.Controllers.Common;
 using Application.DTOs.Profile;
 using Application.Interfaces.Profile;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace API.Controllers.Core
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ProfileController : BaseController
     {
         private readonly IProfileService _profileService;
@@ -17,6 +20,7 @@ namespace API.Controllers.Core
         }
 
         [HttpGet]
+        [EnableRateLimiting("ReadPolicy")]
         public async Task<IActionResult> GetProfile()
         {
             var userId =  GetCurrentUserId();
@@ -24,10 +28,11 @@ namespace API.Controllers.Core
             if (result.IsSuccess)
                 return Ok(result.Value);
 
-            return Failure(result);
+            return NotFound(result);
         }
 
         [HttpPatch]
+        [EnableRateLimiting("HeavyPolicy")]
         public async Task<IActionResult> UpdateProfile([FromForm] UpdateProfileRequset requset)
         {
             var userId =  GetCurrentUserId();

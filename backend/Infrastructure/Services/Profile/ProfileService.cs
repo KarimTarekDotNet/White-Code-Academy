@@ -9,6 +9,7 @@ using AutoMapper;
 using Domain.Entites.Audits;
 using Domain.Entites.Users;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Ocsp;
@@ -57,6 +58,26 @@ namespace Infrastructure.Services.Profile
             var result = _mapper.Map<ProfileResponse>(user);
             await _cache.SetAsync<ProfileResponse>(cacheKey, result, TimeSpan.FromMinutes(_configuration.GetValue<double>("Redis:ProfileExpirationMinutes")));
             return Result<ProfileResponse>.Success(result);
+        }
+
+        public async Task<Result<IEnumerable<ProfileResponse>>> GetAllProfilesAsync(QueryParameters parameters)
+        {
+            var users = _userManager.Users.AsQueryable();
+            if(!string.IsNullOrEmpty(parameters.WordForSearch) || 
+            !parameters.WordForSearch!.Equals("%all%", StringComparison.OrdinalIgnoreCase))
+            {
+                var searchTerm = $"%{parameters.WordForSearch.Trim().ToLower()}%";
+                users = users.Where(x => EF.Functions.Like(x.Email!.ToLower(), searchTerm) || 
+                EF.Functions.Like(x.UserName!.ToLower(), searchTerm));
+            }
+            int skip = (parameters.PageNumber - 1) * parameters.PageSize;
+            users = users.Skip(skip).Take(parameters.PageSize);
+        
+            if (users == null || !users.Any())
+                return Result<IEnumerable<ProfileResponse>>.NotFound(MessageKeys.Common.Profile_UsersNotFound);
+
+            var result = _mapper.Map<IEnumerable<ProfileResponse>>(users);
+            return Result<IEnumerable<ProfileResponse>>.Success(result);
         }
 
         public async Task<Result<ProfileResponse>> UpdateProfile(string userId, UpdateProfileRequset request)

@@ -34,6 +34,8 @@ namespace Application.Common
             => $"students:page{query.PageNumber}:size:{query.PageSize}:sort:" +
                $"{query.SortBy?.Trim().ToLowerInvariant()}:search:{query.WordForSearch?.Trim().ToLowerInvariant()}";
 
+        public static string StudentByUserId(string userId) => $"student:user:{userId}";
+
         // ── Sections ─────────────────────────────────────────────────────────
         public static string Section(Guid id) => $"section:{id}";
         public static string SectionsByCoursePrefix(Guid courseId) => $"sections:course:{courseId}";

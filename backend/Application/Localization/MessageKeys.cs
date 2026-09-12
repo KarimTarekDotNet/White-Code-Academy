@@ -50,6 +50,7 @@ namespace Application.Localization
             public const string Section_NotFound = "Section_NotFound";
             public const string Section_AccessDenied = "Section_AccessDenied";
             public const string Student_NotFound = "Student_NotFound";
+            public const string Students_NotFound = "Students_NotFound";
             public const string Student_AlreadyExists = "Student_AlreadyExists";
             public const string Enrollment_AlreadyExists = "Enrollment_AlreadyExists";
             public const string Enrollment_NotFound = "Enrollment_NotFound";
@@ -75,6 +76,7 @@ namespace Application.Localization
             public const string Auth_PasswordResetSuccess = "Auth_PasswordResetSuccess";
             public const string Auth_SessionExpired = "Auth_SessionExpired";
             public const string Profile_UserNotFound = "Profile_UserNotFound";
+            public const string Profile_UsersNotFound = "Profile_UsersNotFound";
         }
         
         public static class Exception

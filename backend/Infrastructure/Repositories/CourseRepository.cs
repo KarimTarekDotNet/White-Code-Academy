@@ -52,7 +52,8 @@ namespace Infrastructure.Repositories
         private async Task<IEnumerable<Course>> ApplyQueryParameters(IQueryable<Course> query, QueryParameters queryParameters, CancellationToken cancellationToken = default)
         {
             // Apply search filter
-            if (!string.IsNullOrEmpty(queryParameters.WordForSearch) && !queryParameters.WordForSearch!.Equals("all"))
+            if (!string.IsNullOrEmpty(queryParameters.WordForSearch) ||
+            !queryParameters.WordForSearch!.Equals("%all%", StringComparison.OrdinalIgnoreCase))
             {
                 var searchTerm = $"%{queryParameters.WordForSearch.Trim().ToLower()}%";
                 query =
