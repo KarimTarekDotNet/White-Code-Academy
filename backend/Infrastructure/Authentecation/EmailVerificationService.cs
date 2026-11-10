@@ -54,7 +54,7 @@ namespace Infrastructure.Authentecation
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encoded = WebUtility.UrlEncode(token);
-            var frontendBaseUrl = _config.GetValue<string>("EmailSettings:FrontendBaseUrl");
+            var frontendBaseUrl = _config.GetValue<string>("EmailSettings:FrontendLocalBaseUrl");
             var confirmationLink = $"{frontendBaseUrl}/api/authentication/confirm-email?userId={user.Id}&token={encoded}";
             var cooldownMinutes = _config.GetValue<double>("Redis:EmailVerificationResendCooldownMinutes");
 

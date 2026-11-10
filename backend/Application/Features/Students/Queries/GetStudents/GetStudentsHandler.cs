@@ -49,5 +49,4 @@ namespace Application.Features.Students.Queries.GetStudents
             return Result<IEnumerable<StudentResponse>>.Success(response);
         }
     }
-    public record GetStudentsQuery(QueryParameters Parameters) : IRequest<Result<IEnumerable<StudentResponse>>>;
 }

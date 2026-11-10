@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft, ArrowUpLeft, BookOpen, Check, ChevronLeft, ChevronRight, CircleAlert, Code2,
   FileText, GraduationCap, KeyRound, Layers3, LogOut, MonitorPlay, Pencil, Plus,
@@ -44,7 +44,75 @@ const friendlyError = (error) => {
 }
 
 function AmbientScene() {
-  return <div className="ambient-scene" aria-hidden="true"><span className="ambient-orb" /><span className="ambient-cube" /><span className="ambient-ring" /><span className="ambient-grid" /></div>
+  const sceneRef = useRef(null)
+  const pointerRef = useRef({ x: 0, y: 0, isOver: false })
+
+  useEffect(() => {
+    const scene = sceneRef.current
+    if (!scene || typeof window === 'undefined') return undefined
+
+    const elements = {
+      orb: scene.querySelector('.ambient-orb'),
+      cube: scene.querySelector('.ambient-cube'),
+      ring: scene.querySelector('.ambient-ring'),
+      sphere: scene.querySelector('.ambient-sphere'),
+      pyramid: scene.querySelector('.ambient-pyramid'),
+      cylinder: scene.querySelector('.ambient-cylinder'),
+    }
+    let animationFrameId
+
+    const handlePointerMove = (event) => {
+      pointerRef.current = {
+        x: event.clientX - window.innerWidth / 2,
+        y: event.clientY - window.innerHeight / 2,
+        isOver: true,
+      }
+    }
+    const clearPointer = () => { pointerRef.current = { x: 0, y: 0, isOver: false } }
+
+    const animate = () => {
+      const { x, y, isOver } = pointerRef.current
+      const moveFactor = isOver ? 0.02 : 0.005
+      const xMove = x * moveFactor
+      const yMove = y * moveFactor
+
+      if (elements.orb) elements.orb.style.transform = `translate3d(${xMove}px, ${yMove}px, 0) rotateY(${xMove * 0.1}deg)`
+      if (elements.cube) elements.cube.style.transform = `translate3d(${xMove * 0.5}px, ${yMove * 0.5}px, 0) rotateX(${yMove * 0.1}deg) rotateY(${xMove * 0.1}deg)`
+      if (elements.ring) elements.ring.style.transform = `translate3d(${xMove * 0.3}px, ${yMove * 0.3}px, 0) rotateZ(${xMove * 0.05}deg)`
+      if (elements.sphere) elements.sphere.style.transform = `translate3d(${xMove * 0.7}px, ${yMove * 0.7}px, 0) rotateY(${xMove * 0.15}deg)`
+      if (elements.pyramid) elements.pyramid.style.transform = `translate3d(${xMove * 0.4}px, ${yMove * 0.4}px, 0) rotateX(${yMove * 0.1}deg) rotateZ(${xMove * 0.1}deg)`
+      if (elements.cylinder) elements.cylinder.style.transform = `translate3d(${xMove * 0.6}px, ${yMove * 0.6}px, 0) rotateZ(${xMove * 0.1}deg)`
+
+      animationFrameId = window.requestAnimationFrame(animate)
+    }
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
+    window.addEventListener('blur', clearPointer)
+    animate()
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId)
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('blur', clearPointer)
+    }
+  }, [])
+
+  return (
+    <div
+      ref={sceneRef}
+      className="ambient-scene"
+      aria-hidden="true"
+    >
+      <span className="ambient-orb" />
+      <span className="ambient-cube" />
+      <span className="ambient-ring" />
+      <span className="ambient-grid" />
+      {/* Additional 3D elements for enhanced depth */}
+      <span className="ambient-sphere" />
+      <span className="ambient-pyramid" />
+      <span className="ambient-cylinder" />
+    </div>
+  )
 }
 
 function Notice({ notice, onClose }) {
@@ -149,6 +217,7 @@ function Empty({ title, detail }) {
   return <div className="empty"><div className="empty-mark">—</div><h3>{title}</h3><p>{detail}</p></div>
 }
 
+
 function ApiSettings({ api, preferences, onPreferencesChange, onSaved, onClose }) {
   const [url, setUrl] = useState(api.baseUrl)
   const [checking, setChecking] = useState(false)
@@ -182,21 +251,138 @@ function ApiSettings({ api, preferences, onPreferencesChange, onSaved, onClose }
   }
 
   return <Modal title={t('إعدادات الواجهة', 'Interface settings')} onClose={onClose}>
-    <form onSubmit={save} className="stack">
-      <section className="settings-section"><span className="eyebrow">{t('المظهر', 'Appearance')}</span><div className="settings-grid"><div><strong>{t('الوضع', 'Theme')}</strong><p>{t('اعكس الأبيض والأسود على مستوى الموقع.', 'Switch the complete interface between white and black.')}</p><div className="segmented"><button type="button" className={preferences.theme === 'light' ? 'active' : ''} onClick={() => onPreferencesChange({ ...preferences, theme: 'light' })}>{t('فاتح', 'Light')}</button><button type="button" className={preferences.theme === 'dark' ? 'active' : ''} onClick={() => onPreferencesChange({ ...preferences, theme: 'dark' })}>{t('داكن', 'Dark')}</button></div></div><div><strong>{t('كثافة العرض', 'Display density')}</strong><p>{t('مسافات أوسع أو أكثر اختصارًا.', 'Use spacious or more compact layout spacing.')}</p><div className="segmented"><button type="button" className={preferences.density === 'comfortable' ? 'active' : ''} onClick={() => onPreferencesChange({ ...preferences, density: 'comfortable' })}>{t('مريح', 'Comfortable')}</button><button type="button" className={preferences.density === 'compact' ? 'active' : ''} onClick={() => onPreferencesChange({ ...preferences, density: 'compact' })}>{t('مضغوط', 'Compact')}</button></div></div><div><strong>{t('الحركة', 'Motion')}</strong><p>{t('شغّل أو أوقف الحركات الهادئة.', 'Turn the calm interface motion on or off.')}</p><div className="segmented"><button type="button" className={preferences.motion ? 'active' : ''} onClick={() => onPreferencesChange({ ...preferences, motion: true })}>{t('تشغيل', 'On')}</button><button type="button" className={!preferences.motion ? 'active' : ''} onClick={() => onPreferencesChange({ ...preferences, motion: false })}>{t('إيقاف', 'Off')}</button></div></div><div><strong>{t('لغة الواجهة', 'Interface language')}</strong><p>{t('تترجم هذه الاختيارات الواجهة والتواريخ والطلبات الجديدة.', 'This choice translates the interface, dates, and new API requests.')}</p><div className="segmented"><button type="button" className={preferences.locale === 'ar' ? 'active' : ''} onClick={() => onPreferencesChange({ ...preferences, locale: 'ar' })}>العربية</button><button type="button" className={preferences.locale === 'en' ? 'active' : ''} onClick={() => onPreferencesChange({ ...preferences, locale: 'en' })}>English</button></div></div></div></section>
-      <details className="api-settings"><summary>{t('إعداد API للمطورين', 'Developer API settings')}</summary>
-      <Field label={t('رابط الـ API الأساسي', 'API base address')} hint={t('مثال: https://localhost:7045 — لا تضف /api في النهاية.', 'Example: https://localhost:7045 — do not add /api at the end.')}>
-        <input dir="ltr" value={url} onChange={(event) => setUrl(event.target.value)} required />
-      </Field>
-      <p className="callout">{t('إعداد التطوير هذا مستقل عن إعدادات العرض أعلاه.', 'This development setting is separate from the interface preferences above.')}</p>
-      {status && <p className={status.startsWith(t('تم', 'Connected')) ? 'form-success' : 'form-error'}>{status}</p>}
-      <div className="form-actions"><Button className="button-secondary" loading={checking} onClick={checkConnection} type="button"><RefreshCw size={17} /> {t('اختبار الاتصال', 'Test connection')}</Button><Button type="submit"><Check size={17} /> {t('حفظ الرابط', 'Save address')}</Button></div>
-      </details>
-      <div className="form-actions"><Button className="button-secondary" onClick={onClose}>{t('إغلاق الإعدادات', 'Close settings')}</Button></div>
+    <form onSubmit={save} className="settings-form">
+      <div className="settings-header">
+        <h2>{t('الإعدادات', 'Settings')}</h2>
+        <p>{t('ضبط تفضيلاتك لتخصيص تجربة WhiteCode Academy', 'Adjust your preferences to customize your WhiteCode Academy experience')}</p>
+      </div>
+
+      <div className="settings-section">
+        <h3>{t('المظهر', 'Appearance')}</h3>
+        <div className="settings-grid">
+          <div className="setting-item">
+            <label>{t('الوضع', 'Theme')}</label>
+            <div className="setting-control">
+              <button
+                type="button"
+                className={preferences.theme === 'light' ? 'active' : ''}
+                onClick={() => onPreferencesChange({ ...preferences, theme: 'light' })}
+              >
+                {t('فاتح', 'Light')}
+              </button>
+              <button
+                type="button"
+                className={preferences.theme === 'dark' ? 'active' : ''}
+                onClick={() => onPreferencesChange({ ...preferences, theme: 'dark' })}
+              >
+                {t('داكن', 'Dark')}
+              </button>
+            </div>
+          </div>
+          <div className="setting-item">
+            <label>{t('كثافة العرض', 'Display density')}</label>
+            <div className="setting-control">
+              <button
+                type="button"
+                className={preferences.density === 'comfortable' ? 'active' : ''}
+                onClick={() => onPreferencesChange({ ...preferences, density: 'comfortable' })}
+              >
+                {t('مريح', 'Comfortable')}
+              </button>
+              <button
+                type="button"
+                className={preferences.density === 'compact' ? 'active' : ''}
+                onClick={() => onPreferencesChange({ ...preferences, density: 'compact' })}
+              >
+                {t('مضغوط', 'Compact')}
+              </button>
+            </div>
+          </div>
+          <div className="setting-item">
+            <label>{t('الحركة', 'Motion')}</label>
+            <div className="setting-control">
+              <button
+                type="button"
+                className={preferences.motion ? 'active' : ''}
+                onClick={() => onPreferencesChange({ ...preferences, motion: true })}
+              >
+                {t('تشغيل', 'On')}
+              </button>
+              <button
+                type="button"
+                className={!preferences.motion ? 'active' : ''}
+                onClick={() => onPreferencesChange({ ...preferences, motion: false })}
+              >
+                {t('إيقاف', 'Off')}
+              </button>
+            </div>
+          </div>
+          <div className="setting-item">
+            <label>{t('لغة الواجهة', 'Interface language')}</label>
+            <div className="setting-control">
+              <button
+                type="button"
+                className={preferences.locale === 'ar' ? 'active' : ''}
+                onClick={() => onPreferencesChange({ ...preferences, locale: 'ar' })}
+              >
+                العربية
+              </button>
+              <button
+                type="button"
+                className={preferences.locale === 'en' ? 'active' : ''}
+                onClick={() => onPreferencesChange({ ...preferences, locale: 'en' })}
+              >
+                English
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <h3>{t('إعداد API للمطورين', 'Developer API settings')}</h3>
+        <p className="settings-description">{t('إعداد التطوير هذا مستقل عن إعدادات العرض أعلاه.', 'This development setting is separate from the interface preferences above.')}</p>
+        <Field
+          label={t('رابط الـ API الأساسي', 'API base address')}
+          hint={t('مثال: https://localhost:7045 — لا تضف /api في النهاية.', 'Example: https://localhost:7045 — do not add /api at the end.')}
+        >
+          <input
+            dir="ltr"
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            required
+            className="api-input"
+          />
+        </Field>
+        {status && <p className={status.startsWith(t('تم', 'Connected')) ? 'form-success' : 'form-error'}>{status}</p>}
+        <div className="settings-actions">
+          <Button
+            className="button-secondary"
+            loading={checking}
+            onClick={checkConnection}
+          >
+            <RefreshCw size={17} /> {t('اختبار الاتصال', 'Test connection')}
+          </Button>
+          <Button
+            type="submit"
+            className="primary-button"
+          >
+            <Check size={17} /> {t('حفظ الرابط', 'Save address')}
+          </Button>
+        </div>
+      </div>
+
+      <div className="settings-actions">
+        <Button
+          className="button-secondary"
+          onClick={onClose}
+        >
+          {t('إغلاق الإعدادات', 'Close settings')}
+        </Button>
+      </div>
     </form>
   </Modal>
 }
-
 function Header({ authenticated, roles, onNavigate, onLogout, onOpenSettings }) {
   return <header className="site-header">
     <button className="brand" onClick={() => onNavigate('/')} aria-label={t('الصفحة الرئيسية', 'Home page')}>
@@ -314,6 +500,7 @@ function AuthPage({ api, onAuthenticated, onNavigate, showNotice }) {
   const [login, setLogin] = useState({ identity: '', password: '' })
   const [register, setRegister] = useState({ firstName: '', lastName: '', userName: '', email: '', password: '', confirmPassword: '' })
   const [email, setEmail] = useState('')
+  const [registeredEmail, setRegisteredEmail] = useState('')
 
   const submitLogin = async (event) => {
     event.preventDefault(); setLoading(true)
@@ -338,8 +525,10 @@ function AuthPage({ api, onAuthenticated, onNavigate, showNotice }) {
     event.preventDefault(); setLoading(true)
     try {
       const response = await api.register(register)
-      setEmail(register.email); setMode('verify')
-      showNotice(t('تم إنشاء الحساب. افحص بريدك لتأكيده.', 'Your account has been created. Check your email to verify it.'))
+      setRegisteredEmail(register.email)
+      setEmail(register.email)
+      setMode('verify')
+      showNotice(t('تم إنشاء الحساب. افحص لتأكيده.', 'Your account has been created. Check your email to verify it.'))
     } catch (error) { showNotice(friendlyError(error), 'error') } finally { setLoading(false) }
   }
   const sendEmail = async (type) => {
@@ -378,7 +567,16 @@ function AuthPage({ api, onAuthenticated, onNavigate, showNotice }) {
       {(mode === 'verify' || mode === 'forgot') && <>
         <div className="auth-title"><span className="eyebrow">{t('البريد الإلكتروني', 'Email')}</span><h2>{mode === 'verify' ? t('تأكيد الحساب', 'Verify account') : t('استعادة كلمة المرور', 'Reset password')}</h2><p>{mode === 'verify' ? t('أدخل بريد الحساب لإعادة إرسال رابط التفعيل.', 'Enter your account email to resend the verification link.') : t('سنرسل إليك رابطًا آمنًا لتعيين كلمة مرور جديدة.', 'We will send you a secure link to set a new password.')}</p></div>
         <form className="stack" onSubmit={(event) => { event.preventDefault(); sendEmail(mode) }}>
-          <Field label={t('البريد الإلكتروني', 'Email address')}><input dir="ltr" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></Field>
+          {mode === 'verify' && registeredEmail ? (
+            <>
+              <Field label={t('البريد الإلكتروني', 'Email address')}>
+                <p className="form-email-display">{registeredEmail}</p>
+                <input type="hidden" value={registeredEmail} />
+              </Field>
+            </>
+          ) : (
+            <Field label={t('البريد الإلكتروني', 'Email address')}><input dir="ltr" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></Field>
+          )}
           <Button type="submit" loading={loading}>{mode === 'verify' ? t('إرسال رابط التفعيل', 'Send verification link') : t('إرسال رابط الاستعادة', 'Send reset link')} <ArrowLeft size={17} /></Button>
         </form>
         <p className="switch-copy"><button onClick={() => setMode('login')}>{t('العودة لتسجيل الدخول', 'Back to sign in')}</button></p>
@@ -398,10 +596,16 @@ function ConfirmationPage({ api, type, onNavigate, showNotice }) {
     if (type !== 'email') return
     if (!userId || !token) { setLoading(false); showNotice('رابط التفعيل لا يحتوي البيانات المطلوبة.', 'error'); return }
     api.confirmEmail(userId, token)
-      .then(() => showNotice(t('تم تأكيد البريد الإلكتروني.', 'Your email has been verified.')))
+      .then(() => {
+        showNotice(t('تم تأكيد البريد الإلكتروني. جاري تحويلك إلى تسجيل الدخول...', 'Email confirmed successfully. Redirecting to sign in...'))
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          onNavigate('/auth')
+        }, 1500)
+      })
       .catch((error) => showNotice(friendlyError(error), 'error'))
       .finally(() => setLoading(false))
-  }, [api, token, type, userId, showNotice])
+  }, [api, token, type, userId, showNotice, onNavigate])
 
   const reset = async (event) => {
     event.preventDefault(); setLoading(true)
@@ -411,14 +615,15 @@ function ConfirmationPage({ api, type, onNavigate, showNotice }) {
     } catch (error) { showNotice(friendlyError(error), 'error') } finally { setLoading(false) }
   }
 
-  if (type === 'email') return <main className="single-page"><section className="result-card"><ShieldCheck size={42} /><span className="eyebrow">تأكيد البريد</span><h1>{loading ? 'جارٍ تأكيد حسابك…' : 'تمت معالجة رابط التفعيل'}</h1><p>يمكنك الآن تسجيل الدخول إلى WhiteCode Academy.</p><Button onClick={() => onNavigate('/auth')}>اذهب لتسجيل الدخول <ArrowLeft size={17} /></Button></section></main>
+  if (type === 'email') return <main className="single-page"><section className="result-card"><ShieldCheck size={42} /><span className="eyebrow">تأكيد البريد</span><h1>{loading ? 'جارٍ تأكيد حسابك…' : 'تم تأكيد البريد الإلكتروني بنجاح!'}</h1><p>{loading ? 'يرجى الانتظار بينما نؤكد حسابك...' : 'تم تأكيد بريدك الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول إلى WhiteCode Academy.'}</p><div className="confirmation-actions">{!loading && <Button onClick={() => onNavigate('/auth')}>اذهب لتسجيل الدخول <ArrowLeft size={17} /></Button>}</div></section></main>
   return <main className="single-page"><section className="result-card reset-card"><KeyRound size={42} /><span className="eyebrow">كلمة مرور جديدة</span><h1>عيّن كلمة مرورك.</h1>
+    <div className="endpoint-pending" role="status"><span>قريبًا</span><p>تأكيد كلمة المرور ينتظر تهيئة اتصال آمن من الـ API.</p></div>
     <form className="stack" onSubmit={reset}>
-      <Field label="كلمة المرور الجديدة"><input dir="ltr" type="password" value={form.newPassword} onChange={(event) => setForm({ ...form, newPassword: event.target.value })} required minLength="8" /></Field>
-      <Field label="تأكيد كلمة المرور"><input dir="ltr" type="password" value={form.confirmPassword} onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })} required /></Field>
-      <Button type="submit" loading={loading}>حفظ كلمة المرور</Button>
+      <Field label="كلمة المرور الجديدة"><input dir="ltr" type="password" value={form.newPassword} onChange={(event) => setForm({ ...form, newPassword: event.target.value })} required minLength="8" disabled /></Field>
+      <Field label="تأكيد كلمة المرور"><input dir="ltr" type="password" value={form.confirmPassword} onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })} required disabled /></Field>
+      <Button type="button" disabled>حفظ كلمة المرور</Button>
     </form>
-    <p className="api-limitation">ملاحظة تقنية: مسار الباك إند الحالي يعرّف هذا الطلب كـ <code>GET</code> مع <code>FromBody</code>، بينما المتصفحات لا ترسل body في GET. الواجهة تمرر القيم في query لتكون جاهزة فور تصحيح عقد الـ API إلى <code>POST</code> أو <code>FromQuery</code>، لكن لا يمكن للفرونت وحده جعل body GET صالحًا.</p>
+    <p className="api-limitation">ملاحظة تقنية: مسار الباك إند الحالي يعرّف هذا الطلب كـ <code>GET</code> مع <code>FromBody</code>، بينما المتصفحات لا ترسل body في GET. لتفعيله بأمان، نحتاج <code>POST /api/password/confirm-reset-password</code> مع <code>userId</code> و <code>token</code> في query وبيانات كلمة المرور في body.</p>
   </section></main>
 }
 
@@ -605,7 +810,7 @@ function InstructorEditor({ api, item, onClose, onSaved, showNotice }) {
     } catch (error) { showNotice(friendlyError(error), 'error') } finally { setLoading(false) }
   }
   return <Modal title={item ? 'تعديل المدرّس' : 'تعيين مدرّس'} onClose={onClose}>
-    <form className="stack" onSubmit={submit}>{!item && <SearchPicker label="المستخدم" hint="ابحث بالاسم أو البريد ثم اختر الحساب، من دون إدخال معرّف يدوي." value={form.userId} selectedLabel={userLabel} fetchItems={(query) => api.getUsers(query)} getLabel={(user) => [user.firstName, user.lastName].filter(Boolean).join(' ') || user.userName || user.email} onChange={(user) => { const id = user?.id || user?.userId || ''; setForm({ ...form, userId: id }); setUserLabel(user ? ([user.firstName, user.lastName].filter(Boolean).join(' ') || user.userName || user.email) : '') }} required />}{!item && userLabel && !form.userId && <p className="api-limitation">تعرض استجابة المستخدم الاسم والبريد، لكنها لا تتضمن <code>id</code> بعد؛ لذلك بقي زر التعيين معطّلًا لحماية البيانات من تعيين حساب خاطئ.</p>}<SearchPicker label="القسم" value={form.departmentId} selectedLabel={departmentLabel} fetchItems={(query) => api.getDepartments(query)} getLabel={(department) => department.name} onChange={(department) => { setForm({ ...form, departmentId: department?.id || '' }); setDepartmentLabel(department?.name || '') }} /><div className="form-actions"><Button className="button-secondary" onClick={onClose}>إلغاء</Button><Button type="submit" loading={loading} disabled={!item && !form.userId}>{item ? 'حفظ التعديلات' : 'تعيين المدرّس'}</Button></div></form>
+    <form className="stack" onSubmit={submit}>{!item && <SearchPicker label={t('المستخدم', 'User')} hint={t('ابحث بالاسم أو البريد ثم اختر الحساب؛ لا يظهر أو يُكتب أي معرّف.', 'Search by name or email, then choose the account. No identifier is shown or typed.')} value={form.userId} selectedLabel={userLabel} fetchItems={(query) => api.getUsers(query)} getLabel={(user) => [user.firstName, user.lastName].filter(Boolean).join(' ') || user.userName || user.email} onChange={(user) => { const id = user?.id || user?.userId || ''; setForm({ ...form, userId: id }); setUserLabel(user ? ([user.firstName, user.lastName].filter(Boolean).join(' ') || user.userName || user.email) : '') }} required />}<SearchPicker label={t('القسم', 'Department')} value={form.departmentId} selectedLabel={departmentLabel} fetchItems={(query) => api.getDepartments(query)} getLabel={(department) => department.name} onChange={(department) => { setForm({ ...form, departmentId: department?.id || '' }); setDepartmentLabel(department?.name || '') }} /><div className="form-actions"><Button className="button-secondary" onClick={onClose}>{t('إلغاء', 'Cancel')}</Button><Button type="submit" loading={loading} disabled={!item && !form.userId}>{item ? t('حفظ التعديلات', 'Save changes') : t('تعيين المدرّس', 'Assign instructor')}</Button></div></form>
   </Modal>
 }
 
@@ -715,6 +920,7 @@ function App() {
   const [notice, setNotice] = useState(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [preferences, setPreferences] = useState(readPreferences)
+  const [isLoading, setIsLoading] = useState(true)
   activeLocale = preferences.locale
   const api = useMemo(() => new WhiteCodeApi({ onSessionChange: setSessionToken }), [])
   const authenticated = Boolean(sessionToken)
@@ -735,6 +941,15 @@ function App() {
     const timer = setTimeout(() => setNotice(null), 7000)
     return () => clearTimeout(timer)
   }, [notice])
+
+  useEffect(() => {
+    // Simulate app loading - hide loading screen after 1.5 seconds
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1500)
+
+    return () => clearTimeout(loadingTimer)
+  }, [])
   useEffect(() => {
     localStorage.setItem(FRONTEND_PREFERENCES_KEY, JSON.stringify(preferences))
     document.documentElement.dataset.theme = preferences.theme
@@ -757,7 +972,29 @@ function App() {
   else if (path === '/courses' || path.startsWith('/courses/')) page = <PublicCoursesPage api={api} courseId={path.split('/')[2]} onNavigate={navigate} showNotice={showNotice} />
   else if (path.startsWith('/dashboard')) page = authenticated ? <Dashboard api={api} roles={roles} pathname={path} onNavigate={navigate} onLogout={logout} showNotice={showNotice} /> : <HomePage api={api} authenticated={authenticated} onNavigate={navigate} showNotice={showNotice} />
   else page = <HomePage api={api} authenticated={authenticated} onNavigate={navigate} showNotice={showNotice} />
-  return <><AmbientScene /><Header authenticated={authenticated} roles={roles} onNavigate={navigate} onLogout={logout} onOpenSettings={() => setSettingsOpen(true)} />{page}<Notice notice={notice} onClose={() => setNotice(null)} />{settingsOpen && <ApiSettings api={api} preferences={preferences} onPreferencesChange={setPreferences} onSaved={() => showNotice(t('تم حفظ رابط الـ API.', 'The API address has been saved.'))} onClose={() => setSettingsOpen(false)} />}</>
+  return <>{isLoading ? (
+      <div className="site-loader">
+        <div className="loader-content">
+          <div className="loader-logo">
+            <span className="brand-mark">W</span>
+            <span>WhiteCode<span className="brand-light">Academy</span></span>
+          </div>
+          <div className="loader-text">{t('جاري التحميل...', 'Loading...')}</div>
+          <div className="loader-progress">
+            <div className="loader-bar"></div>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <>
+        <AmbientScene />
+        <Header authenticated={authenticated} roles={roles} onNavigate={navigate} onLogout={logout} onOpenSettings={() => setSettingsOpen(true)} />
+        {page}
+        <Notice notice={notice} onClose={() => setNotice(null)} />
+        {settingsOpen && <ApiSettings api={api} preferences={preferences} onPreferencesChange={setPreferences} onSaved={() => showNotice(t('تم حفظ رابط الـ API.', 'The API address has been saved.'))} onClose={() => setSettingsOpen(false)} />}
+        <div className="copyright-notice">{t('© 2026 WhiteCodeAcademy. جميع الحقوق محفوظة - هذا الكود source غير مسموح باستخدامه.', '© 2026 WhiteCodeAcademy. All rights reserved - This source code is not permitted for use.')}</div>
+      </>
+    )}</>
 }
 
 export default App

@@ -48,9 +48,9 @@ namespace Infrastructure.Authentecation
                 return new AuthResponse
                 {
                     IsAuthenticated = false,
-                    Message         = MessageKeys.Common.Auth_InvalidCredentials,
-                    Expiration      = DateTime.UtcNow,
-                    AccessToken     = string.Empty
+                    Message = MessageKeys.Common.Auth_InvalidCredentials,
+                    Expiration = DateTime.UtcNow,
+                    AccessToken = string.Empty
                 };
             }
 
@@ -102,10 +102,10 @@ namespace Infrastructure.Authentecation
             await _cache.SetAsync<string>(CacheKeys.RefreshTokenActive(user.Id), _refreshTokenSerivce.HashToken(refresh.RawToken), TimeSpan.FromMinutes(cacheExpireMinutes));
 
             dto.IsAuthenticated = true;
-            dto.Message         = MessageKeys.Common.Auth_LoginSuccess;
-            dto.AccessToken     = accessToken;
-            dto.Expiration      = DateTime.UtcNow.AddMinutes(jwtExpireMinutes);
-            dto.RefreshToken    = refresh.RawToken;
+            dto.Message = MessageKeys.Common.Auth_LoginSuccess;
+            dto.AccessToken = accessToken;
+            dto.Expiration = DateTime.UtcNow.AddMinutes(jwtExpireMinutes);
+            dto.RefreshToken = refresh.RawToken;
             return dto;
         }
 
@@ -137,9 +137,9 @@ namespace Infrastructure.Authentecation
                     return new AuthResponse
                     {
                         IsAuthenticated = false,
-                        Message         = string.Join(" | ", result.Errors.Select(e => e.Description)),
-                        Expiration      = DateTime.UtcNow,
-                        AccessToken     = string.Empty
+                        Message = string.Join(" | ", result.Errors.Select(e => e.Description)),
+                        Expiration = DateTime.UtcNow,
+                        AccessToken = string.Empty
                     };
                 }
 
@@ -221,9 +221,9 @@ namespace Infrastructure.Authentecation
                     return new AuthResponse
                     {
                         IsAuthenticated = false,
-                        Message         = MessageKeys.Common.Auth_InvalidRefreshToken,
-                        Expiration      = DateTime.UtcNow,
-                        AccessToken     = string.Empty
+                        Message = MessageKeys.Common.Auth_InvalidRefreshToken,
+                        Expiration = DateTime.UtcNow,
+                        AccessToken = string.Empty
                     };
                 }
 
@@ -249,12 +249,12 @@ namespace Infrastructure.Authentecation
                 return new AuthResponse
                 {
                     IsAuthenticated = true,
-                    Message         = MessageKeys.Common.Auth_TokenRefreshed,
-                    Id              = oldToken.ApplicationUserId,
-                    Email           = oldToken.ApplicationUser.Email,
-                    UserName        = oldToken.ApplicationUser.UserName,
-                    AccessToken     = accessToken,
-                    Expiration      = DateTime.UtcNow.AddMinutes(jwtExpireMinutes),
+                    Message = MessageKeys.Common.Auth_TokenRefreshed,
+                    Id = oldToken.ApplicationUserId,
+                    Email = oldToken.ApplicationUser.Email,
+                    UserName = oldToken.ApplicationUser.UserName,
+                    AccessToken = accessToken,
+                    Expiration = DateTime.UtcNow.AddMinutes(jwtExpireMinutes),
                     RefreshToken    = token.RawToken
                 };
             }
@@ -290,8 +290,8 @@ namespace Infrastructure.Authentecation
 
             foreach (var item in tokens!)
             {
-                item.RevokedAt    = DateTimeOffset.UtcNow;
-                item.RevokedByIp  = ipAddress;
+                item.RevokedAt = DateTimeOffset.UtcNow;
+                item.RevokedByIp = ipAddress;
             }
 
             await _context.SaveChangesAsync();
