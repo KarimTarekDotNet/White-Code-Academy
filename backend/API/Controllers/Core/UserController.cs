@@ -19,6 +19,7 @@ namespace API.Controllers.Core
         
         [Authorize(Roles="Admin,Instructor")]
         [EnableRateLimiting("ReadPolicy")]
+        [HttpGet]
         public async Task<IActionResult> GetUsers([FromQuery]QueryParameters queryParameters)
         {
             var result = await _profileService.GetAllProfilesAsync(queryParameters);

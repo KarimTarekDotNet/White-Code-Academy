@@ -229,17 +229,15 @@ namespace Infrastructure.Authentecation
 
                 var token = await _refreshTokenSerivce.RotateAsync(oldToken, oldToken.ApplicationUserId, ipAddress);
 
-                var accessToken      = await GenerateJwtToken(oldToken.ApplicationUser);
+                var accessToken = await GenerateJwtToken(oldToken.ApplicationUser);
                 var jwtExpireMinutes = _configuration.GetValue<double>("Jwt:ExpiryMinutes");
                 var cacheExpireMinutes = _configuration.GetValue<double>("Redis:AuthTokenActiveCacheMinutes");
 
                 await _context.SaveChangesAsync();
 
                 // Refresh the active-token keys with the new tokens
-                await _cache.SetAsync<bool>(
-                    CacheKeys.AuthTokenActive(oldToken.ApplicationUserId),
-                    true,
-                    TimeSpan.FromMinutes(jwtExpireMinutes));
+                await _cache.SetAsync<bool>(CacheKeys.AuthTokenActive(oldToken.ApplicationUserId), 
+                true, TimeSpan.FromMinutes(jwtExpireMinutes));
 
                 await _cache.SetAsync<string>(
                     CacheKeys.RefreshTokenActive(oldToken.ApplicationUserId),
@@ -255,7 +253,7 @@ namespace Infrastructure.Authentecation
                     UserName = oldToken.ApplicationUser.UserName,
                     AccessToken = accessToken,
                     Expiration = DateTime.UtcNow.AddMinutes(jwtExpireMinutes),
-                    RefreshToken    = token.RawToken
+                    RefreshToken = token.RawToken
                 };
             }
             catch (Exception ex)

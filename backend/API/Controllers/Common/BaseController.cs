@@ -34,7 +34,7 @@ namespace API.Controllers.Common
             => StatusCode(result.StatusCode, new
             {
                 StatusCode = result.StatusCode,
-                Message    = ResolveMessage(result.Error)
+                Message = ResolveMessage(result.Error)
             });
 
         /// <summary>

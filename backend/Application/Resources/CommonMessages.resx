@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Course_NotFound" xml:space="preserve">
-    <value>Course with ID {0} not found.</value>
+    <value>Course with ID not found.</value>
   </data>
   <data name="Course_InstructorNotFound" xml:space="preserve">
     <value>No instructor profile found for the current user.</value>
@@ -68,7 +68,7 @@
     <value>InstructorId is required when creating a course as Admin.</value>
   </data>
   <data name="Course_InstructorWithIdNotFound" xml:space="preserve">
-    <value>Instructor with ID {0} not found.</value>
+    <value>Instructor with ID not found.</value>
   </data>
   <data name="Course_InstructorDepartmentMismatch" xml:space="preserve">
     <value>Instructor does not belong to the specified department.</value>
@@ -80,13 +80,13 @@
     <value>You do not have permission to modify this course.</value>
   </data>
   <data name="Department_NotFound" xml:space="preserve">
-    <value>Department with ID {0} not found.</value>
+    <value>Department with ID not found.</value>
   </data>
   <data name="Department_HasActiveDependencies" xml:space="preserve">
     <value>Cannot delete this department because it has active courses or instructors assigned to it.</value>
   </data>
   <data name="Instructor_NotFound" xml:space="preserve">
-    <value>Instructor with ID {0} not found.</value>
+    <value>Instructor with ID not found.</value>
   </data>
   <data name="Instructor_AlreadyExists" xml:space="preserve">
     <value>This user is already assigned as an instructor.</value>
@@ -95,16 +95,16 @@
     <value>Cannot remove this instructor because they have active courses assigned.</value>
   </data>
   <data name="Instructor_UserNotFound" xml:space="preserve">
-    <value>User with ID {0} not found.</value>
+    <value>User with ID not found.</value>
   </data>
   <data name="Section_NotFound" xml:space="preserve">
-    <value>Section with ID {0} not found.</value>
+    <value>Section with ID not found.</value>
   </data>
   <data name="Section_AccessDenied" xml:space="preserve">
     <value>You do not have permission to modify this section.</value>
   </data>
   <data name="Student_NotFound" xml:space="preserve">
-    <value>Student with ID {0} not found.</value>
+    <value>Student with ID not found.</value>
   </data>
   <data name="Students_NotFound" xml:space="preserve">
     <value>No students found.</value>

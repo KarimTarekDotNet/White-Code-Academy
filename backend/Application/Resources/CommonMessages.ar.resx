@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Course_NotFound" xml:space="preserve">
-    <value>الدورة بالمعرّف {0} غير موجودة.</value>
+    <value>الدورة بالمعرّف غير موجودة.</value>
   </data>
   <data name="Course_InstructorNotFound" xml:space="preserve">
     <value>لا يوجد ملف تعريف مدرّب للمستخدم الحالي.</value>
@@ -68,7 +68,7 @@
     <value>معرّف المدرّب مطلوب عند إنشاء دورة كمسؤول.</value>
   </data>
   <data name="Course_InstructorWithIdNotFound" xml:space="preserve">
-    <value>المدرّب بالمعرّف {0} غير موجود.</value>
+    <value>المدرّب بالمعرّف غير موجود.</value>
   </data>
   <data name="Course_InstructorDepartmentMismatch" xml:space="preserve">
     <value>المدرّب لا ينتمي للقسم المحدد.</value>
@@ -80,13 +80,13 @@
     <value>ليس لديك صلاحية لتعديل هذه الدورة.</value>
   </data>
   <data name="Department_NotFound" xml:space="preserve">
-    <value>القسم بالمعرّف {0} غير موجود.</value>
+    <value>القسم بالمعرّف غير موجود.</value>
   </data>
   <data name="Department_HasActiveDependencies" xml:space="preserve">
     <value>لا يمكن حذف هذا القسم لأنه يحتوي على دورات أو مدرّبين نشطين.</value>
   </data>
   <data name="Instructor_NotFound" xml:space="preserve">
-    <value>المدرّب بالمعرّف {0} غير موجود.</value>
+    <value>المدرّب بالمعرّف غير موجود.</value>
   </data>
   <data name="Instructor_AlreadyExists" xml:space="preserve">
     <value>هذا المستخدم معيَّن بالفعل كمدرّب.</value>
@@ -95,10 +95,10 @@
     <value>لا يمكن إزالة هذا المدرّب لأنه لديه دورات نشطة.</value>
   </data>
   <data name="Instructor_UserNotFound" xml:space="preserve">
-    <value>المستخدم بالمعرّف {0} غير موجود.</value>
+    <value>المستخدم بالمعرّف غير موجود.</value>
   </data>
   <data name="Section_NotFound" xml:space="preserve">
-    <value>القسم الفرعي بالمعرّف {0} غير موجود.</value>
+    <value>القسم الفرعي بالمعرّف غير موجود.</value>
   </data>
   <data name="Students_NotFound" xml:space="preserve">
     <value>لم يتم العثور على طلاب.</value>
@@ -107,7 +107,7 @@
     <value>ليس لديك صلاحية لتعديل هذا القسم الفرعي.</value>
   </data>
   <data name="Student_NotFound" xml:space="preserve">
-    <value>الطالب بالمعرّف {0} غير موجود.</value>
+    <value>الطالب بالمعرّف غير موجود.</value>
   </data>
   <data name="Student_AlreadyExists" xml:space="preserve">
     <value>هذا المستخدم مسجَّل بالفعل كطالب.</value>

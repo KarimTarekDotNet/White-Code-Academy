@@ -7,12 +7,15 @@ using Domain.Entites.Audits;
 using Domain.Entites.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using FFMpegCore;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Application.Features.Sections.Commands.DeleteSection
 {
     public class DeleteSectionHandler : IRequestHandler<DeleteSectionCommand, Result<bool>>
     {
         private readonly ICacheService _cache;
+        private readonly IWebHostEnvironment _environment;
         private readonly ILogger<DeleteSectionHandler> _logger;
         private readonly ISectionRepository _sectionRepository;
         private readonly IInstructorRepository _instructorRepository;
@@ -25,7 +28,8 @@ namespace Application.Features.Sections.Commands.DeleteSection
             IFileStorageService fileStorageService,
             IAuditLogRepository auditLogRepository,
             ILogger<DeleteSectionHandler> logger,
-            ICacheService cache)
+            ICacheService cache,
+            IWebHostEnvironment environment)
         {
             _sectionRepository = sectionRepository;
             _instructorRepository = instructorRepository;
@@ -33,6 +37,7 @@ namespace Application.Features.Sections.Commands.DeleteSection
             _auditLogRepository = auditLogRepository;
             _logger = logger;
             _cache = cache;
+            _environment = environment;
         }
 
         public async Task<Result<bool>> Handle(DeleteSectionCommand request, CancellationToken cancellationToken)
@@ -62,10 +67,17 @@ namespace Application.Features.Sections.Commands.DeleteSection
             }
 
             if (!string.IsNullOrEmpty(section.VideoUrl))
+            {
+                var physicalVideoPath = Path.Combine(_environment.WebRootPath, section.VideoUrl);
+                var mediaInfo = await FFProbe.AnalyseAsync(physicalVideoPath, cancellationToken: cancellationToken);
+                section.Course.TotalDurationInSeconds -= (long)mediaInfo.Duration.TotalSeconds;
                 await _fileStorageService.DeleteAsync(section.VideoUrl);
+            }
 
             if (!string.IsNullOrEmpty(section.PdfUrl))
                 await _fileStorageService.DeleteAsync(section.PdfUrl);
+                
+            section.Course.TotalSections -= 1;
 
             _sectionRepository.Delete(section);
             await _sectionRepository.SaveChangesAsync(cancellationToken);
